@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
  
 public class PostForm {
- 
+
 //    private int id;
  
 //    @NotNull (message = "日付を入力してください。")
@@ -17,7 +17,12 @@ public class PostForm {
  
     private String contentForm;
 
- 
+
+    public PostForm(String titleForm, String contentForm){
+    	this.titleForm = titleForm;
+    	this.contentForm = contentForm;
+    }
+    
 //    public Date getDateForm() {
 //        return dateForm;
 //    }
