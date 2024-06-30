@@ -1,7 +1,10 @@
 package blog.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,28 +35,24 @@ public class BlogRestController {
 	 * @return 成功時：resources/templates/blog.html
 	 * @return エラー発生時：resources/templates/form.html
 	 */
-//	@PostMapping(path = "/insert", params = "insert")
-//	public String insert(@Valid @ModelAttribute("postForm") PostForm form, BindingResult result, Model model){
-//		if (result.hasErrors()) {
-//			System.out.println(result.toString());
-//			model.addAttribute("error", "パラメータエラーが発生しました。");
-//			return "form";
-//		}
-//
-//		blogservice.insert(form);
-//		model.addAttribute("postForm", form);
-//		return "redirect:/blog"; //二重送信防止
-//	}
     @PostMapping(path = "/insert")
-    public String insert(@Valid @RequestBody PostForm form, BindingResult result) {
+    public ResponseEntity<String> insert(@Valid @RequestBody PostForm form, BindingResult result) {
+    	System.out.println("jasontest");
         if (result.hasErrors()) {
-        	System.out.println(result.toString());
-            System.out.println(form.getTitleForm());
-            System.out.println(form.getContentForm());
-            return "form";
+            // エラーメッセージを収集
+            StringBuilder errorMessages = new StringBuilder();
+            for (FieldError error : result.getFieldErrors()) {
+                errorMessages.append(error.getField()).append(": ").append(error.getDefaultMessage()).append("; ");
+            }
+            for (ObjectError error : result.getGlobalErrors()) {
+                errorMessages.append(error.getObjectName()).append(": ").append(error.getDefaultMessage()).append("; ");
+            }
+            
+            // エラーメッセージをJSON形式で返す
+            return ResponseEntity.badRequest().body("{\"error\": \"" + errorMessages.toString() + "\"}");
         }
-        blogservice.insert(form);
-        return "redirect:/blog"; // 二重送信防止
+        blogservice.insert(form); // データを挿入する処理
+        return ResponseEntity.ok("{\"message\": \"登録成功\", \"redirect\": \"/blog\"}"); // 二重送信防止
     }
     
 	/**
@@ -62,39 +61,28 @@ public class BlogRestController {
 	 * @param Model model 取得したデータを渡すことでよしなにhtmlのthymeleafに記載されているjavaの値を入れてくれるクラス
 	 * @return resources/templates/blog.html
 	 */
-//	@PostMapping(path = "/update", params = "update")
-//	public String update(
-//			@ModelAttribute PutForm form,
-//			BindingResult result,
-//			Model model) {
-//		if (result.hasErrors()) {
-//			model.addAttribute("error", "パラメータエラーが発生しました。");
-//			return "form";
-//		}
-//		System.out.println(form.getTitleForm());
-//		System.out.println(form.getContentForm());
-//		System.out.println(form.getId());
-//		int updateResult = blogservice.update(form); //Title, Content, idが入っている update失敗の場合, 0
-//		//update失敗(0の場合)、ログを出力
-//		if(updateResult == 0) {
-//			System.out.println("update失敗");
-//		}
-//		return "redirect:/blog";
-//	}
     @PostMapping(path = "/update")
-    public String insert(@Valid @RequestBody PutForm form, BindingResult result) {
+    public ResponseEntity<String> update(@Valid @RequestBody PutForm form, BindingResult result) {
     	System.out.println(result.toString());
         System.out.println(form.getTitleForm());
         System.out.println(form.getContentForm());
         if (result.hasErrors()) {
-            return "form";
+            StringBuilder errorMessages = new StringBuilder();
+            for (FieldError error : result.getFieldErrors()) {
+                errorMessages.append(error.getField()).append(": ").append(error.getDefaultMessage()).append("; ");
+            }
+            for (ObjectError error : result.getGlobalErrors()) {
+                errorMessages.append(error.getObjectName()).append(": ").append(error.getDefaultMessage()).append("; ");
+            }
+
+            // エラーメッセージをJSON形式で返す
+            return ResponseEntity.badRequest().body("{\"error\": \"" + errorMessages.toString() + "\"}");
         }
         int updateResult = blogservice.update(form);
         if(updateResult == 0) {
-        	blogservice.update(form);
-            return "form";
+        	return ResponseEntity.badRequest().body("{\"error\": \"更新失敗\"}");
         }
-        return "redirect:/blog";
+        return ResponseEntity.ok("{\"message\": \"更新成功\", \"redirect\": \"/blog\"}");
     }
 
 }

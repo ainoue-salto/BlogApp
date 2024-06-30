@@ -40,7 +40,7 @@ public class BlogDao implements IBlogDao {
 
 		String sql = sqlBuilder.toString();
 
-		//タスク一覧をMapのListで取得 検索機能は使用しないためjdbcTemplate.queryForListに変更
+		//投稿一覧をMapのListで取得 検索機能は使用しないためjdbcTemplate.queryForListに変更
 		List<Map<String, Object>> resultList = jdbcTemplate.queryForList(sql);
 		//return用の空のListを用意
 		List<Blog> list = new ArrayList<Blog>();
@@ -108,12 +108,10 @@ public class BlogDao implements IBlogDao {
 	@Override
 	public int update(PutForm form) {
 		String sql = "UPDATE blog "
-//				+ "SET title=?, content=?, date=?, update_datetime=? "
 				+ "SET title=?, content=?, update_datetime=? "
 				+ "WHERE id=?";
 		
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-//		Object[] params = { form.getTitleForm(), form.getContentForm(), form.getDateForm(), timestamp, form.getId() };
 		Object[] params = { form.getTitleForm(), form.getContentForm(), timestamp, form.getId() };
 
 		return jdbcTemplate.update(sql, params); //更新した行数(int)が入る
